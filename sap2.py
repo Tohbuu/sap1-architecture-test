@@ -352,10 +352,9 @@ class SAP1Simulator:
         # Display final results
         print("\nFINAL RESULTS:")
         print("=" * 60)
-        print(f"Output register: {self.OUT} (Decimal: {self.OUT})")
+        print(f"Output register: {self.OUT:02X} (Decimal: {self.OUT})") # <-- Fixed line
         print(f"Program completed: {'Yes' if halt else 'No'}")
-
-# Run the simulation
+        # Run the simulation
 if __name__ == "__main__":
     simulator = SAP1Simulator()
     simulator.run()
