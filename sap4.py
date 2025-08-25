@@ -5,8 +5,12 @@ import time
 # Initialize Pygame
 pygame.init()
 
-# Constants
-WIDTH, HEIGHT = 1200, 800
+# Screen dimensions
+SCREEN_WIDTH, SCREEN_HEIGHT = 1440, 900
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.RESIZABLE)
+pygame.display.set_caption("SAP-1 Architecture Simulator")
+
+# Colors
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 GRAY = (200, 200, 200)
@@ -20,9 +24,7 @@ PURPLE = (180, 60, 240)
 CYAN = (0, 200, 200)
 DARK_BLUE = (0, 80, 160)
 
-# Set up the display
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("SAP-1 Architecture Simulator")
+# Fonts
 font = pygame.font.SysFont('consolas', 16)
 title_font = pygame.font.SysFont('consolas', 24)
 small_font = pygame.font.SysFont('consolas', 14)
@@ -65,7 +67,7 @@ class SAP1Simulator:
     def get_user_input(self):
         """Get program instructions and data from user"""
         # Set up input screen
-        input_screen = pygame.display.set_mode((WIDTH, HEIGHT))
+        input_screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
         pygame.display.set_caption("SAP-1 Program Input")
         
         program_input = []
@@ -78,8 +80,8 @@ class SAP1Simulator:
         input_font = pygame.font.SysFont('consolas', 18)
         title_font = pygame.font.SysFont('consolas', 24)
         
-        input_rect = pygame.Rect(100, HEIGHT - 100, WIDTH - 200, 40)
-        program_rect = pygame.Rect(100, 100, WIDTH - 200, HEIGHT - 250)
+        input_rect = pygame.Rect(100, SCREEN_HEIGHT - 100, SCREEN_WIDTH - 200, 40)
+        program_rect = pygame.Rect(100, 100, SCREEN_WIDTH - 200, SCREEN_HEIGHT - 250)
         
         running = True
         while running:
@@ -119,7 +121,7 @@ class SAP1Simulator:
             
             # Draw title
             title = title_font.render("SAP-1 Program Input", True, BLUE)
-            input_screen.blit(title, (WIDTH // 2 - title.get_width() // 2, 30))
+            input_screen.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, 30))
             
             # Draw message
             msg_text = input_font.render(message, True, BLACK)
@@ -150,7 +152,7 @@ class SAP1Simulator:
             pygame.display.flip()
         
         # Return to main screen
-        screen = pygame.display.set_mode((WIDTH, HEIGHT))
+        screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.RESIZABLE)
         pygame.display.set_caption("SAP-1 Architecture Simulator")
         
         return program_input, data_input
@@ -327,8 +329,21 @@ class SAP1Visualizer:
         self.execution_history = []
         self.memory_view_start = 0
         self.show_help = False
+        self.screen_width, self.screen_height = SCREEN_WIDTH, SCREEN_HEIGHT
         
+    def scale_value(self, value, is_width=True):
+        """Scale values based on current screen size"""
+        base_dimension = SCREEN_WIDTH if is_width else SCREEN_HEIGHT
+        current_dimension = self.screen_width if is_width else self.screen_height
+        return int(value * current_dimension / base_dimension)
+    
     def draw_register(self, x, y, width, height, name, value, active=False):
+        # Scale dimensions
+        x = self.scale_value(x)
+        y = self.scale_value(y, False)
+        width = self.scale_value(width)
+        height = self.scale_value(height, False)
+        
         # Draw register box
         color = YELLOW if active else LIGHT_GRAY
         pygame.draw.rect(screen, color, (x, y, width, height))
@@ -345,6 +360,12 @@ class SAP1Visualizer:
         return pygame.Rect(x, y, width, height)
     
     def draw_bus(self, x, y, width, height, active=False):
+        # Scale dimensions
+        x = self.scale_value(x)
+        y = self.scale_value(y, False)
+        width = self.scale_value(width)
+        height = self.scale_value(height, False)
+        
         # Draw bus line
         color = RED if active else BLACK
         pygame.draw.rect(screen, color, (x, y, width, height), 2)
@@ -356,6 +377,12 @@ class SAP1Visualizer:
         return pygame.Rect(x, y, width, height)
     
     def draw_memory(self, x, y, width, height):
+        # Scale dimensions
+        x = self.scale_value(x)
+        y = self.scale_value(y, False)
+        width = self.scale_value(width)
+        height = self.scale_value(height, False)
+        
         # Draw memory box
         pygame.draw.rect(screen, LIGHT_GRAY, (x, y, width, height))
         pygame.draw.rect(screen, BLACK, (x, y, width, height), 2)
@@ -365,8 +392,7 @@ class SAP1Visualizer:
         screen.blit(mem_text, (x + (width - mem_text.get_width()) // 2, y + 10))
         
         # Draw memory cells
-        cell_width = 40
-        cell_height = 30
+        cell_height = self.scale_value(30, False)
         cells_x = x + 10
         cells_y = y + 50
         
@@ -401,6 +427,12 @@ class SAP1Visualizer:
         return pygame.Rect(x, y, width, height)
     
     def draw_alu(self, x, y, width, height):
+        # Scale dimensions
+        x = self.scale_value(x)
+        y = self.scale_value(y, False)
+        width = self.scale_value(width)
+        height = self.scale_value(height, False)
+        
         # Draw ALU box
         pygame.draw.rect(screen, LIGHT_GRAY, (x, y, width, height))
         pygame.draw.rect(screen, BLACK, (x, y, width, height), 2)
@@ -433,6 +465,12 @@ class SAP1Visualizer:
         return pygame.Rect(x, y, width, height)
     
     def draw_control_matrix(self, x, y, width, height):
+        # Scale dimensions
+        x = self.scale_value(x)
+        y = self.scale_value(y, False)
+        width = self.scale_value(width)
+        height = self.scale_value(height, False)
+        
         # Draw control matrix box
         pygame.draw.rect(screen, LIGHT_GRAY, (x, y, width, height))
         pygame.draw.rect(screen, BLACK, (x, y, width, height), 2)
@@ -467,6 +505,12 @@ class SAP1Visualizer:
         return pygame.Rect(x, y, width, height)
     
     def draw_output_panel(self, x, y, width, height):
+        # Scale dimensions
+        x = self.scale_value(x)
+        y = self.scale_value(y, False)
+        width = self.scale_value(width)
+        height = self.scale_value(height, False)
+        
         # Draw output panel
         pygame.draw.rect(screen, LIGHT_GRAY, (x, y, width, height))
         pygame.draw.rect(screen, BLACK, (x, y, width, height), 2)
@@ -488,6 +532,12 @@ class SAP1Visualizer:
         return pygame.Rect(x, y, width, height)
     
     def draw_instructions(self, x, y, width, height):
+        # Scale dimensions
+        x = self.scale_value(x)
+        y = self.scale_value(y, False)
+        width = self.scale_value(width)
+        height = self.scale_value(height, False)
+        
         # Draw instruction panel
         pygame.draw.rect(screen, LIGHT_GRAY, (x, y, width, height))
         pygame.draw.rect(screen, BLACK, (x, y, width, height), 2)
@@ -520,15 +570,15 @@ class SAP1Visualizer:
     
     def draw_buttons(self):
         # Draw control buttons
-        button_y = HEIGHT - 50
-        button_width = 120
-        button_height = 40
-        button_spacing = 20
+        button_y = self.scale_value(SCREEN_HEIGHT - 50, False)
+        button_width = self.scale_value(120)
+        button_height = self.scale_value(40, False)
+        button_spacing = self.scale_value(20)
         
         buttons = []
         
         # Step button
-        step_rect = pygame.Rect(20, button_y, button_width, button_height)
+        step_rect = pygame.Rect(self.scale_value(20), button_y, button_width, button_height)
         pygame.draw.rect(screen, GREEN, step_rect)
         pygame.draw.rect(screen, BLACK, step_rect, 2)
         step_text = font.render("Step", True, BLACK)
@@ -538,7 +588,7 @@ class SAP1Visualizer:
         
         # Auto button
         auto_color = ORANGE if self.auto_advance else BLUE
-        auto_rect = pygame.Rect(20 + button_width + button_spacing, button_y, button_width, button_height)
+        auto_rect = pygame.Rect(self.scale_value(20) + button_width + button_spacing, button_y, button_width, button_height)
         pygame.draw.rect(screen, auto_color, auto_rect)
         pygame.draw.rect(screen, BLACK, auto_rect, 2)
         auto_text = font.render("Auto", True, BLACK)
@@ -547,7 +597,7 @@ class SAP1Visualizer:
         buttons.append(("auto", auto_rect))
         
         # Reset button
-        reset_rect = pygame.Rect(20 + 2 * (button_width + button_spacing), button_y, button_width, button_height)
+        reset_rect = pygame.Rect(self.scale_value(20) + 2 * (button_width + button_spacing), button_y, button_width, button_height)
         pygame.draw.rect(screen, RED, reset_rect)
         pygame.draw.rect(screen, BLACK, reset_rect, 2)
         reset_text = font.render("Reset", True, BLACK)
@@ -557,45 +607,45 @@ class SAP1Visualizer:
         
         # Speed buttons
         speed_text = font.render("Speed:", True, BLACK)
-        screen.blit(speed_text, (20 + 3 * (button_width + button_spacing), button_y + 10))
+        screen.blit(speed_text, (self.scale_value(20) + 3 * (button_width + button_spacing), button_y + 10))
         
         # Faster button
-        faster_rect = pygame.Rect(20 + 3 * (button_width + button_spacing) + 70, button_y, 40, button_height)
+        faster_rect = pygame.Rect(self.scale_value(20) + 3 * (button_width + button_spacing) + self.scale_value(70), button_y, self.scale_value(40), button_height)
         pygame.draw.rect(screen, CYAN, faster_rect)
         pygame.draw.rect(screen, BLACK, faster_rect, 2)
         faster_text = font.render("+", True, BLACK)
-        screen.blit(faster_text, (faster_rect.x + (40 - faster_text.get_width()) // 2, 
+        screen.blit(faster_text, (faster_rect.x + (self.scale_value(40) - faster_text.get_width()) // 2, 
                                  faster_rect.y + (button_height - faster_text.get_height()) // 2))
         buttons.append(("faster", faster_rect))
         
         # Slower button
-        slower_rect = pygame.Rect(20 + 3 * (button_width + button_spacing) + 120, button_y, 40, button_height)
+        slower_rect = pygame.Rect(self.scale_value(20) + 3 * (button_width + button_spacing) + self.scale_value(120), button_y, self.scale_value(40), button_height)
         pygame.draw.rect(screen, PURPLE, slower_rect)
         pygame.draw.rect(screen, BLACK, slower_rect, 2)
         slower_text = font.render("-", True, BLACK)
-        screen.blit(slower_text, (slower_rect.x + (40 - slower_text.get_width()) // 2, 
+        screen.blit(slower_text, (slower_rect.x + (self.scale_value(40) - slower_text.get_width()) // 2, 
                                  slower_rect.y + (button_height - slower_text.get_height()) // 2))
         buttons.append(("slower", slower_rect))
         
         # Help button
-        help_rect = pygame.Rect(WIDTH - 100, 10, 80, 30)
+        help_rect = pygame.Rect(self.screen_width - self.scale_value(100), self.scale_value(10, False), self.scale_value(80), self.scale_value(30, False))
         pygame.draw.rect(screen, ORANGE, help_rect)
         pygame.draw.rect(screen, BLACK, help_rect, 2)
         help_text = font.render("Help", True, BLACK)
-        screen.blit(help_text, (help_rect.x + (80 - help_text.get_width()) // 2, 
-                               help_rect.y + (30 - help_text.get_height()) // 2))
+        screen.blit(help_text, (help_rect.x + (self.scale_value(80) - help_text.get_width()) // 2, 
+                               help_rect.y + (self.scale_value(30, False) - help_text.get_height()) // 2))
         buttons.append(("help", help_rect))
         
         return buttons
     
     def draw_help(self):
         # Draw help overlay
-        overlay = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+        overlay = pygame.Surface((self.screen_width, self.screen_height), pygame.SRCALPHA)
         overlay.fill((0, 0, 0, 200))
         screen.blit(overlay, (0, 0))
         
         # Draw help content
-        help_rect = pygame.Rect(WIDTH // 8, HEIGHT // 8, WIDTH * 3 // 4, HEIGHT * 3 // 4)
+        help_rect = pygame.Rect(self.screen_width // 8, self.screen_height // 8, self.screen_width * 3 // 4, self.screen_height * 3 // 4)
         pygame.draw.rect(screen, WHITE, help_rect)
         pygame.draw.rect(screen, BLACK, help_rect, 3)
         
@@ -637,10 +687,10 @@ class SAP1Visualizer:
         
         # Draw title
         title = title_font.render("SAP-1 Architecture Simulator", True, BLUE)
-        screen.blit(title, (WIDTH // 2 - title.get_width() // 2, 10))
+        screen.blit(title, (self.screen_width // 2 - title.get_width() // 2, 10))
         
         # Draw components
-        bus_rect = self.draw_bus(150, 100, WIDTH - 300, 4, any(self.simulator.control_signals.values()))
+        bus_rect = self.draw_bus(150, 100, self.screen_width - 300, 4, any(self.simulator.control_signals.values()))
         
         # Left side components
         pc_rect = self.draw_register(50, 150, 100, 80, "PC", self.simulator.PC, 
@@ -652,16 +702,16 @@ class SAP1Visualizer:
                                      self.simulator.control_signals.get('Ea', 0))
         
         # Center components
-        mem_rect = self.draw_memory(WIDTH // 2 - 120, 150, 240, 300)
-        alu_rect = self.draw_alu(WIDTH // 2 - 80, 470, 160, 150)
+        mem_rect = self.draw_memory(self.screen_width // 2 - 120, 150, 240, 300)
+        alu_rect = self.draw_alu(self.screen_width // 2 - 80, 470, 160, 150)
         
         # Right side components
-        ir_rect = self.draw_register(WIDTH - 150, 150, 100, 80, "IR", self.simulator.IR, 
+        ir_rect = self.draw_register(self.screen_width - 150, 150, 100, 80, "IR", self.simulator.IR, 
                                     self.simulator.control_signals.get('Li', 0) or 
                                     self.simulator.control_signals.get('Ei', 0))
-        tmp_rect = self.draw_register(WIDTH - 150, 250, 100, 80, "TMP", self.simulator.TMP, 
+        tmp_rect = self.draw_register(self.screen_width - 150, 250, 100, 80, "TMP", self.simulator.TMP, 
                                      self.simulator.control_signals.get('Lb', 0))
-        out_rect = self.draw_register(WIDTH - 150, 350, 100, 80, "OUT", self.simulator.OUT, 
+        out_rect = self.draw_register(self.screen_width - 150, 350, 100, 80, "OUT", self.simulator.OUT, 
                                      self.simulator.control_signals.get('Lo', 0))
         
         # Bottom panels
@@ -709,6 +759,11 @@ class SAP1Visualizer:
             if event.type == pygame.QUIT:
                 return False
             
+            if event.type == pygame.VIDEORESIZE:
+                # Update screen dimensions
+                self.screen_width, self.screen_height = event.size
+                screen = pygame.display.set_mode((self.screen_width, self.screen_height), pygame.RESIZABLE)
+            
             if self.show_help and event.type == pygame.KEYDOWN:
                 self.show_help = False
                 return True
@@ -735,12 +790,15 @@ class SAP1Visualizer:
                                 self.show_help = True
                     
                     # Check memory scroll
-                    mem_rect = pygame.Rect(WIDTH // 2 - 120, 150, 240, 300)
+                    mem_rect = pygame.Rect(self.screen_width // 2 - self.scale_value(120), 
+                                          self.scale_value(150, False), 
+                                          self.scale_value(240), 
+                                          self.scale_value(300, False))
                     if mem_rect.collidepoint(mouse_pos):
-                        if mouse_pos[0] > mem_rect.x + mem_rect.width - 30:
-                            if mouse_pos[1] < mem_rect.y + 30:
+                        if mouse_pos[0] > mem_rect.x + mem_rect.width - self.scale_value(30):
+                            if mouse_pos[1] < mem_rect.y + self.scale_value(30, False):
                                 self.memory_view_start = max(0, self.memory_view_start - 1)
-                            elif mouse_pos[1] > mem_rect.y + mem_rect.height - 30:
+                            elif mouse_pos[1] > mem_rect.y + mem_rect.height - self.scale_value(30, False):
                                 self.memory_view_start = min(8, self.memory_view_start + 1)
         
         # Auto-advance if enabled
