@@ -8,7 +8,7 @@ class SAP1Simulator:
         self.TMP = 0   # Temporary Register
         self.OUT = 0   # Output Register
         
-        # 16-byte memory for 
+        # 16-byte memory
         self.memory = [0] * 16
         
         # Control signals (all initially off)
