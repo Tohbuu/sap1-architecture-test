@@ -25,10 +25,8 @@ class SAP1Simulator:
             0xF: 'HLT'
         }
 
-        # last ALU result used for printing when Eu is active
         self.last_alu_result = None
 
-        # only prompt if interactive requested
         if interactive:
             self.initialize_memory_with_user_input()
 
@@ -65,7 +63,6 @@ class SAP1Simulator:
 
             if instruction in ('LDA', 'ADD', 'SUB') and len(parts) == 2:
                 try:
-                    # allow decimal or hex like 0xA by using base=0
                     addr = int(parts[1], 0)
                     if addr < 0 or addr > 0x0F:
                         print("Address must be 0-15 (0x0-0xF).")
@@ -99,7 +96,6 @@ class SAP1Simulator:
                     if not (0 <= addr < 16):
                         print("Address out of range (0-15).")
                         continue
-                    # ensure data is 8-bit
                     data_values[addr] = value & 0xFF
                 except ValueError:
                     print("Invalid format. Use: address value (decimal or 0x hex)")
@@ -123,7 +119,6 @@ class SAP1Simulator:
 
             if instruction in ['LDA', 'ADD', 'SUB']:
                 opcode = opcode_map[instruction]
-                # ensure operand is 4-bit
                 if addr < 0 or addr > 0x0F:
                     print(f"Warning: operand address {addr} out of 4-bit range; masking to low 4 bits.")
                 operand = addr & 0x0F
@@ -135,14 +130,12 @@ class SAP1Simulator:
             if addr >= len(self.memory):
                 print(f"Warning: Address {addr} out of memory range!")
                 continue
-            # store only 8 bits
             self.memory[addr] = value & 0xFF
 
     def reset_control_signals(self):
         """Turn off all control signals"""
         for signal in self.control_signals:
             self.control_signals[signal] = 0
-        # clear any transient ALU result used for display
         self.last_alu_result = None
 
     def print_control_sequence(self):
@@ -176,10 +169,9 @@ class SAP1Simulator:
             print(f"Bus: PC -> {self.PC:02X}")
         elif self.control_signals['Ei']:
             print(f"Bus: IR -> {self.IR:02X}")
-        elif self.control_signals['Ea']:
+        elif self.control_signals['Ea'] and not self.control_signals['Eu']:
             print(f"Bus: ACC -> {self.ACC:02X}")
         elif self.control_signals['Eu']:
-            # prefer last_alu_result if available (avoid recomputing from current ACC)
             if self.last_alu_result is not None:
                 result = self.last_alu_result & 0xFF
             else:
@@ -201,7 +193,6 @@ class SAP1Simulator:
         self.reset_control_signals()
         self.control_signals['Ce'] = 1
         self.control_signals['Li'] = 1
-        # defensive: mask memory read to 8 bits
         self.IR = self.memory[self.MAR] & 0xFF
         self.PC += 1
         self.print_state("FETCH T2: IR <- Memory[MAR], PC <- PC+1")
@@ -226,7 +217,6 @@ class SAP1Simulator:
             self.t_state = 5
             self.reset_control_signals()
             self.control_signals['La'] = 1
-            # mask loaded data to 8 bits
             self.ACC = self.memory[self.MAR] & 0xFF
             self.print_state("EXECUTE LDA T5: ACC <- Memory[MAR]")
 
@@ -245,20 +235,15 @@ class SAP1Simulator:
             self.t_state = 5
             self.reset_control_signals()
             self.control_signals['Lb'] = 1
-            # mask TMP to 8 bits
             self.TMP = self.memory[self.MAR] & 0xFF
             self.print_state("EXECUTE ADD T5: TMP <- Memory[MAR]")
 
             self.t_state = 6
             self.reset_control_signals()
-            # compute ALU result first, mask to 8-bit, store for display
             alu_result = (self.ACC + self.TMP) & 0xFF
             self.last_alu_result = alu_result
-            # set signals indicating ALU->bus and ACC load
-            self.control_signals['Ea'] = 1
             self.control_signals['Eu'] = 1
             self.control_signals['La'] = 1
-            # update ACC with masked result
             self.ACC = alu_result
             self.print_state("EXECUTE ADD T6: ACC <- ACC + TMP")
 
@@ -273,20 +258,16 @@ class SAP1Simulator:
             self.t_state = 5
             self.reset_control_signals()
             self.control_signals['Lb'] = 1
-            # mask TMP to 8 bits
             self.TMP = self.memory[self.MAR] & 0xFF
             self.print_state("EXECUTE SUB T5: TMP <- Memory[MAR]")
 
             self.t_state = 6
             self.reset_control_signals()
-            # compute ALU result first, mask to 8-bit, store for display
             alu_result = (self.ACC - self.TMP) & 0xFF
             self.last_alu_result = alu_result
-            self.control_signals['Ea'] = 1
             self.control_signals['Eu'] = 1
             self.control_signals['La'] = 1
             self.control_signals['Su'] = 1
-            # update ACC with masked result
             self.ACC = alu_result
             self.print_state("EXECUTE SUB T6: ACC <- ACC - TMP")
 
@@ -320,12 +301,10 @@ class SAP1Simulator:
         print("=" * 60)
 
         print("\nInitial Memory Contents:")
-        # grouped 4-bytes-per-line summary (preserve original format)
         for i in range(0, 16, 4):
             mem_values = [f"{self.memory[j]:02X}" for j in range(i, min(i+4, 16))]
             print(f"Address {i:02X}-{min(i+3, 15):02X}: {' '.join(mem_values)}")
 
-        # add detailed listing below the grouped summary
         print("\nDetailed Memory Contents:")
         for i in range(16):
             val = self.memory[i]
